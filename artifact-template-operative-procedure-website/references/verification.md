@@ -1,0 +1,35 @@
+# Verification and independent review
+
+A completed guide needs agreement among sources, step prose, illustrations, state and controls. A package integrity check alone is not enough.
+
+## Before review
+
+- Reconcile the complete paper extraction log against the finished guide. Check the disposition of every in-scope finding and validate camera orientation and expected landmarks against source figure panels.
+
+- Audit the new paper list against verified primary metadata. Every reference contributed; source relevance badges match each option. Distinguish accessed full text, supplied excerpt and abstract-only sources privately. No original pterional bibliography remains merely because it was copied.
+- For every requested configuration, traverse the whole procedure, checking action order, named planes/structures, source figures, cumulative changes, instruments and reconstruction. For a single procedure verify that top selectors and their event dependencies are removed. No old fixed variant counts remain.
+- Check all structure IDs, layer names, tool/marker follow IDs, step IDs, source IDs, figure links, counts and decoded buffer lengths. Reject nonfinite geometry. Verify source coordinate transforms and units. Inspect important surfaces for self-intersection, clearance, clean cut borders and intact rims.
+- Exercise Right / Left / Both, with cuts, displacements, instruments, highlights and labels only on the operative side. Both operates right for a unilateral procedure. Check native left anatomy, side persistence and complete camera and lens-zoom persistence across steps/options, 2D capture and breakpoint changes. Midline procedures should follow their true midline behavior.
+- Scrub the muscle reflection and closure paths in both directions and on both sides. Check sampled intermediate poses for bone or tissue intersection. Inspect the dura before and after opening and document the coverage of the modeled membrane. Check that recommended views retain unmanipulated anatomy across steps. Verify Operative View mirrors laterality, clears pan/zoom and leaves the step and layers intact. Check that Layers & View contains the only Instruments toggle.
+- Test all Relevant / All pairs and partial Full Context restoration. Full regional context must not reintroduce intersections or silently show unrepresented tissues. Initial anatomy should load promptly; lazy-upload extra context when practical. Do not call All a complete atlas if it is a subset.
+- Test the case-specific abbreviation dictionary (including noncranial terms when applicable), stage picking and a single stable Title Case label from front, back, sides, superior and oblique views. A deep artery anchor must be local to the action, not a remote segment. Labels and tools remain understandable as anatomy occludes them. Test high-DPI resize, clicks, drag versus click, touch and hidden layers.
+- Confirm every important new action has an appropriate marking/animation; Before / After, slider and Replay agree, and reduced-motion behavior is usable. Check the changed area is visible at a reasonable view/zoom. No persistent cyan tool from a different step.
+- Test 2D images, before/after correspondence, tissue-plane diagrams, selected side and expanded context; enlarging/saving works and capture restores every layer, camera, side and comparison setting.
+- Click Indications and related-anatomy buttons and verify actual procedure state. Check all sources remain visible, boxed Papers count, no PDF download buttons, no Relevant Only / Restore Step Layers, no creator-addressed provenance, no extraneous bottom bar or model gallery.
+- Inspect the layout at normal desktop and narrower sizes: about 70/30 desktop; mobile model gets most vertical space and the reader fits its active title/first two sentences; compact headings/cards, internal scroll, no rightmost outer page scrollbar and no clipped controls. Verify no default mobile labels or top-left model title; tap selection still labels one part. Only Reset View and Layers & View appear at the model bottom. The upward layer panel fits the available area, even on short screens. Previous/Next stays beside the tabs and top-aligns every active card, including the last. Check restoration of controls and separate label preferences after breakpoint changes. Exercise the 0.25–16 magnification range, pinch, two-finger pan, wheel and keys without changing camera distance or making a pinch select anatomy. Keyboard navigation and loading/error states work.
+
+## What counts as verification
+
+Run syntax and meaningful pure-data/state tests before browser inspection. Geometry clearance sampling and CPU-rendered projections can identify problems. A simulated DOM/WebGL interface can test wiring. None of those prove live shaders compile, real depth/picking work, or the layout renders well. Use an available permitted browser to rotate, click and view the actual guide. If browser access is denied, do not use a new server, alternative browser engine or indirect screenshot route to evade it. Finish permitted checks and state live-rendering/responsiveness/performance limits plainly.
+
+Build and check the offline HTML plus deployment ZIP. Verify root `index.html`, complete local assets, exact decompression round-trip, loader success/failure behavior, current source count and ZIP integrity. Do not publish user-supplied copyrighted full text by default. External paper links may require internet; core anatomy and guide must work offline in the standalone file.
+
+## Separate reviewer
+
+After implementation, assign a separate reviewer this scope when delegation is available:
+
+> Review the complete procedure website against the supplied technique PDFs, anatomy provenance, working evidence map and this template's interface contract. Inspect every configuration and both sides, all steps and closure, Indications/Papers mappings, instruments/markings, layers, 2D and label stability. Report specific mismatches and fix them in the assigned working files. Do not modify the retained skill reference or publish anything. Distinguish code/geometry checks from observations in a real permitted browser.
+
+Provide the actual new case, PDFs and completed site, not the author's desired conclusions. Reserve files or serialize edits so the reviewer and primary builder do not overwrite one another. Re-run affected checks after fixes, and request further review only for unresolved material concerns. When delegation is unavailable, do the same pass yourself without calling it independent.
+
+Deliver a short report separating: source/anatomy limitations, known illustrative approximations, completed automated checks, actual browser observations, and unverified behavior. Avoid “perfect,” “validated combinations,” or clinical accuracy claims unsupported by evidence. An honest incomplete structure is preferable to a confidently invented one, but do not stop fixing concrete, authorized issues merely because a limitation note is easier.

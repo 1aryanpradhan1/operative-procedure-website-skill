@@ -1,0 +1,56 @@
+# Website fidelity and content contract
+
+The retained source is the visual and behavioral baseline. Preserve its CSS tokens, spacing, compact card shape, controls, toolbar and overall arrangement. Default output is an educational anatomy guide for a general audience; no developer terminology in ordinary controls or guide cards.
+
+## Layout
+
+- Compact header with the procedure's Title Case name, without a final period. Remove old case-specific titles and subtitles.
+- Desktop: about 70% interactive model, 30% Guide / Indications / Papers panel. Fill viewport height and keep the outer page from scrolling; allow internal scrolling in the guide and layer panel. Smaller screens stack model/content within a dynamic-height viewport with usable internal scrolling. Give the model all remaining height after a compact reader showing the active step title and first two sentences; measure the active card at the current width, with a reasonable cap for short screens. Recompute on resize and rotation. Keep the outer page fixed.
+- No bottom educational/source/offline status strip, no green configuration box over the model, no list or gallery of “12 models,” no redundant configuration subtitle.
+- For a requested family, compact and clearly labeled “Choose the Surgical Approach” options at the top. For one procedure, omit this block entirely and reclaim its vertical space. Do not replace it with a pointless one-option dropdown.
+- Box the Papers count as a number badge. Retain obvious active states and keyboard access.
+
+## Mobile controls and reading
+
+On mobile, hide automatic anatomy labels by default, while preserving one label when a user taps a structure and an optional labels checkbox in the layer menu. Do not show the top-left model/step title or isolated-context tag above the small identification prompt. Preserve the page's compact procedure title.
+
+At the bottom of the model, show only Reset View and the Layers & View opener next to one another. Hide bottom orientation-preset buttons and the stage/status strip. Retain the model's upper mode/action controls. Move Previous / Next beside the Guide / Indications / Papers tabs; keep this navigation semantically separate from the tablist. Selecting Next from another tab returns to Guide. Each active step, including the final step, must start at the top of the internal guide panel immediately below the tabs; leave sufficient scroll space after the last card to allow that alignment. Avoid scrolling the outer page.
+
+The Layers & View menu opens upward from the dock, stays aligned within the horizontal viewport and scrolls internally. Its maximum height, padding and borders must fit the actual space above the dock; do not impose a minimum larger than the available space. Keep all existing Relevant / All controls and side options in it. Restore the desktop control locations when the breakpoint changes; move the existing elements rather than duplicating their IDs or event handlers. Keep desktop and mobile automatic-label preferences separately.
+
+## Guide steps
+
+Use the reference's action granularity. Its 27 steps distinguish: identify target/landmark; position and fix head; prepare and mark; drape; incise; preserve layers; mobilize the selected tissue plane; reflect and secure flap; raise periosteum; place burr holes; treat bone edges; detach dura; raise bone flap; flatten an obstructing ridge; place tack-up sutures; open the selected dural window; selected intradural exposure/clinoid work/cisternal work; and individual reconstruction stages through skin closure. This is a **granularity benchmark**, not a sequence to impose on other procedures.
+
+Separate an action when it changes an important plane, exposure, instrument, risk relationship or reconstruction state. A step should do one comparable thing and explain why. Combine minor sub-actions only when they belong to the same operative transition. Use a short action title and 2–4 concise sentences. Keep cards compact enough to scan without long stretches of empty space. Do not put an entire approach, “perform surgery,” or unmodeled lesion treatment in one vague card. Do not add unsupported patient-specific angles, drug doses or exact measurements.
+
+Every step needs a useful model state plus a visible change or relevant marking where possible. Do not claim that a symbol is a physical reconstruction. If a positioning/draping step lacks the actual frame/drapes geometry, a clear schematic orientation or boundary is acceptable, with its limit in credits/visualization details. No step should silently show a stale unrelated illustration. Default guide notes should be empty; omit the removed “Reference anatomy; only the highlighted opening or tissue displacement is illustrated” sentence.
+
+## Indications
+
+Explain which targets and exposure requirements suit the procedure and, for a family, each requested subtype. Distinguish pathology indications from soft-tissue preferences. Clicking an option must change the actual corresponding configuration and focus the relevant step; keyboard Enter/Space must do the same. In a single-procedure guide, clicking an indication can focus its pertinent exposure/target step without inventing variants.
+
+## Model, sides and layers
+
+- Retain Right / Left / Both under clearly named Procedure Side / Context. A unilateral procedure uses the chosen side; Both shows bilateral context and operates on the right. Preserve native left/right anatomy; do not reflect unilateral pathology or asymmetric anatomy and call it native. Midline procedures retain appropriate bilateral context and their actual midline path.
+- Step and variant changes preserve the complete camera: yaw, pitch, distance, pan and target. The selected context side persists too. Recommended View and Reset View restore the step camera and lens magnification. The top 3D toolbar’s Operative View restores a side-aware working angle and clears pan and zoom while preserving layers, stage and comparison state. Side changes must not erase prior user choices unnecessarily.
+- Each tissue category has two independent checkboxes: Relevant for the operative subset and All for available regional anatomy on the chosen side. Use categories that fit the new case, including fascia, muscle, bone, neural tissue, dura/membranes, vessels and nerves where applicable. All is a scope of available head/spine/other regional structures, not a promise of a complete atlas. No Relevant Only toggle or Restore Step Layers control.
+- Recommended views keep the relevant unmanipulated brain, arteries and nerves enabled consistently across steps, subject to real geometric occlusion. For other regions use the analogous stable structures. Reflected or removed tissue follows cumulative procedure state.
+- Full Head Context / Full Spine Context / other appropriate Full Context expands the currently enabled categories and restores the previous All selections when toggled back. Partial scope has a mixed state. Enabling All must not operate on or displace contralateral/context-only tissues.
+- Every anatomically important layer referenced by the guide must be represented, or the omission explicitly identified. Do not silently mention fascia or interposed fat absent from the model. When native geometry is unavailable, fit a clearly documented original illustration with honest specificity.
+
+## Zoom and touch
+
+Preserve the retained lens-based magnification range of 0.25–16 times by default. Wheel, pinch and keyboard zoom magnify the projection without moving the camera through tissue. Two-finger movement pans, one finger rotates, and a completed multi-touch gesture must not select anatomy accidentally. Clamp invalid/zero gestures and extreme magnification. Keep display, picking and label projections at the identical zoom scale. Ordinary step/variant/breakpoint changes preserve magnification, pan and camera. Capturing recommended 2D images temporarily uses their intended scale and restores the user's zoom afterward; Reset View returns to the recommended camera and scale.
+
+## Markings and instruments
+
+Mark each meaningful maneuver with an anatomical landmark, trajectory, opening, displacement, region boundary, suture/fixation symbol or other appropriate representation. Circle a named landmark; trace a planned incision; actually develop burr holes; animate the correct dissection/opening/displacement. The visible highlight should identify the change itself, especially small deep bone work. Opening and closure states must persist correctly downstream. Before hides only the current change and its current instruments/markers; previously completed steps remain.
+
+Cyan instruments should be large enough to see at their active stage and positioned/directed toward the actual action region. Use anatomically plausible schematic approaches; avoid presenting a straight illustrative tool as a validated safe trajectory. Do not silently pass tools through bone, nerves or vessels where the step has not established a corridor. The Instruments checkbox under Layers & View is the sole instruments toggle. Replay and the progress slider animate the relevant region without resetting the user's camera.
+
+## Labels and 2D
+
+One anatomical part is labeled at a time, in Title Case with medical abbreviations preserved. Desktop can show an automatic step label; mobile defaults to no automatic label and retains tap-to-identify. Keep its label box stable on the screen as the model rotates; attach its leader to retained visible points in the procedure-relevant region. Label an artery where it matters to the step, not a remote neck segment. Do not duplicate a structure or bounce labels between multiple boxes. When the intended region is occluded, avoid drawing a leader through solid anatomy; keep a stable understandable label state. Picking and visible labels must use the same depth/masks, including high-DPI screens and after camera changes.
+
+Provide original 2D before/after or recommended-view images from the same model state, displayed above any tissue-plane diagram. Retain enlarge and Save PNG controls. Capture the selected side and context correctly, then restore all user state and the full camera. Keep tissue-plane diagrams coherent with modeled laminae and the chosen variant. Do not use published artwork as an unverified substitute for consistent models.

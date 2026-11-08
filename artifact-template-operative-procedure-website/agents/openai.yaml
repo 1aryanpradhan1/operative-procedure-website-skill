@@ -1,0 +1,7 @@
+interface:
+  display_name: "Operative Procedure Website"
+  short_description: "Build interactive procedure guides for desktop and mobile"
+  icon_large: "./assets/preview.png"
+  default_prompt: "Use $artifact-template-operative-procedure-website for the procedure I name. Adapt the bundled pterional website to my requested procedure and scope using relevant studies."
+policy:
+  allow_implicit_invocation: true
