@@ -1,16 +1,32 @@
 # Operative procedure website skill
 
-A Codex skill for adapting the pterional anatomy guide to a requested operative procedure. The skill covers paper extraction, evidence tracking, anatomy and motion, camera verification, and packaging the finished website.
+A Codex skill that builds interactive anatomy guides from operative papers. The repository includes the working pterional reference, its regional meshes, and the site build tools. A setup script fetches the full Z-Anatomy atlas from a pinned upstream revision when the requested procedure needs other anatomy.
 
-## Use in Codex
+## Install and start
 
-Copy the `artifact-template-operative-procedure-website` folder into your Codex skills directory, usually `~/.codex/skills/`. Invoke `$artifact-template-operative-procedure-website` and name the operation, target, and variants you want covered.
+1. Clone this repository or download its ZIP from GitHub. Copy the `artifact-template-operative-procedure-website` folder into `~/.codex/skills/`. If you use a custom `CODEX_HOME`, use its `skills/` directory. Reopen Codex if the skill is not listed.
+2. Open a project folder where Codex can save the guide. Start with a prompt such as:
 
-## Source
+   > Use $artifact-template-operative-procedure-website to build a guide to the left retrosigmoid approach. Cover the standard exposure through closure.
 
-- `SKILL.md` defines the workflow.
-- `references/` covers research, implementation, and review.
-- `scripts/` materializes the editable project and packages the finished site.
-- `assets/source/` contains the working pterional reference. It includes source links and summaries. Article transcriptions are excluded.
+   A procedure name is enough to start. Include a target, side, or variant if you already know it.
 
-See the reference site's attribution file for the anatomy sources and their license terms.
+## What happens next
+
+1. **Paper intake.** Codex finds relevant technique and anatomy papers and reads the full texts it can access. It asks in one list for the specific PDFs it still needs, with links and what each paper will resolve.
+2. **Attach PDFs.** Upload the requested PDFs in the same Codex chat, including operative figures or supplements if requested. Reply, for example, “Here are the PDFs. Continue building the guide.” If the papers are already accessible, Codex can proceed without an upload.
+3. **Build and review.** Codex resumes the saved project, maps the paper findings to the operative steps and geometry, loads the relevant anatomy, and checks the rendered guide. You receive editable website files, a deployment ZIP, and notes on any evidence or anatomy gaps.
+
+## Anatomy and software
+
+- Use Python 3.11 or newer for the bundled setup and build scripts, and a current WebGL browser to preview the guide.
+- The pterional reference loads from the meshes already in the skill. When those meshes are insufficient, Codex can fetch the full atlas with `scripts/setup_atlas.py` from inside the skill folder. It downloads about 83 MiB, checks the archive checksum, and extracts only `Startup.blend`. You can also run this ahead of time:
+
+  ```sh
+  python3 scripts/setup_atlas.py --cache ~/anatomy-atlas/z-anatomy
+  ```
+
+  If you already have the pinned `Z-Anatomy.zip`, add `--archive /path/to/Z-Anatomy.zip`. Tell Codex the cache path if you set it up yourself.
+- For extracting and evaluating new meshes, the skill prefers a compatible Blender installation with scene script execution disabled. It includes a fallback catalog reader for the pinned scene. If the atlas lacks a structure or the paper does not establish the geometry, Codex will identify that gap and ask for appropriate meshes or evidence.
+
+See the [upstream atlas](https://github.com/Z-Anatomy/Models-of-human-anatomy) and the skill’s reference attribution for the anatomy sources and license terms. Article transcriptions are excluded from this repository.

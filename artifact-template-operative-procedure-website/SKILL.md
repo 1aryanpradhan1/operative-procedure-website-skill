@@ -7,6 +7,8 @@ description: Build operative procedure websites by adapting the bundled Pteriona
 
 Start from the working Pterional Craniotomy site in `assets/source/`. Use it as the reference for the interface and implemented behaviors. Adapt the site to the requested procedure and scope. Reuse matching pterional anatomy, steps and geometry where applicable. Replace case-specific content and geometry for other procedures. Add only the variants the user requests.
 
+The bundled reference includes regional cranial meshes. If the requested region needs anatomy outside that subset, resolve the atlas dependency using [the atlas setup instructions](assets/source/atlas-tools/anatomy.md). Check local assets first, then run the pinned setup helper as part of the workflow when needed. Ask the user for anatomy files only if neither route supplies the needed anatomy.
+
 ## 1. Research first, then request PDFs
 
 Read [research and source handling](references/research.md). Materialize a new project shell with the helper described in section 3 before saving intake there; this shell preparation does not establish a new procedure. Resume an existing materialized project on later PDF uploads instead of materializing into it again. Identify the named procedure, anatomical region, intended extent and any variants the user explicitly wants. A single procedure is the default. Do not invent top-level option groups. For a requested procedure family, derive the option axes from the user's scope and evidence; clarify only consequential ambiguity.

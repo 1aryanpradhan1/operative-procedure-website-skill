@@ -4,6 +4,10 @@ Select the approach corridor and useful surrounding anatomy from the article bef
 
 Look for locally supplied Z-Anatomy project archives or BodyParts3D OBJ archives in accessible source/download directories. Do not assume a particular username, source path or installed Blender. Discover available runtimes and read data without executing scripts bundled in downloaded archives. If network/source access is blocked, use an available licensed subset or explain missing structures; do not repeatedly request unavailable approvals.
 
+## Resolve the atlas dependency
+
+Reuse a suitable local scene, archive, or previously prepared cache when available. Otherwise run the skill's `scripts/setup_atlas.py --cache <writable-atlas-cache>` with Python 3.11 or newer. It downloads the pinned upstream archive, checks SHA-256, and extracts only `Startup.blend`. For the matching local ZIP, pass `--archive <path-to-Z-Anatomy.zip>`. Keep the cache outside published website files. Record the resulting `atlas-source.json` provenance in the working project. Use Blender with automatic script execution disabled when evaluating native objects. If Blender is unavailable, use the bundled catalog and schema reader where supported and identify any remaining extraction limits.
+
 ## Z-Anatomy
 
 Prefer Blender's supported export/data APIs when an available trusted installation can read the scene in background mode without executing archive scripts. Preserve each object's saved world matrix and original hierarchy, and verify any evaluated modifiers.
