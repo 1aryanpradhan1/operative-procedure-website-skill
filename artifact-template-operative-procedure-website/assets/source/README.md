@@ -13,7 +13,7 @@ python3 -m http.server 8000
 ## Source
 
 - [index.html](index.html) and [styles.css](assets/styles.css) contain the page layout and controls.
-- [app.js](assets/app.js) contains the procedure steps (`buildSteps`), camera presets (`setView`, `setSurgeonView`), and WebGL renderer.
+- [app.js](assets/app.js) contains the procedure steps (`buildSteps`), camera controls, and WebGL renderer.
 - [manifest.json](data/manifest.json) contains paper references, atlas metadata, mesh provenance, the build record (`build`) and fallback study plates.
 - [loader.js](assets/loader.js) loads the manifest and six compressed anatomy chunks. It checks that the number of mesh records equals the manifest's `structure_count`.
 
@@ -43,7 +43,7 @@ python3 tools/build_anatomy.py            # rebuild assets/anatomy-0N.bin and da
 python3 tools/build_anatomy.py --check    # build and validate only; write nothing
 ```
 
-The skill repository does not contain the upstream base history. To rebuild, use a full clone of `https://github.com/nyuolab/pterional-craniotomy` containing `7961958`, or unpack that commit's original chunks and pass `--base FILE` here. The shipped meshes work without rebuilding. It reads the base records with `git show 7961958:assets/anatomy-0N.bin`, which needs a full clone containing that commit (not a ZIP download or a shallow clone), or from `--base FILE`. It refuses to run on data that a build has already derived. It needs Python 3 with numpy and scipy and takes about 6 minutes on a 16-core machine. The output is deterministic: rebuilding unchanged inputs reproduces the chunks and `data/manifest.json` byte for byte (per-step timings go to stderr, or to `--summary FILE`). The manifest's `study_plates` (fallback images shown only without WebGL) are maintained by hand; the build keeps them.
+It reads the base records with `git show 7961958:assets/anatomy-0N.bin`, which needs a full clone containing that commit (not a ZIP download or a shallow clone), or from `--base FILE`. It refuses to run on data that a build has already derived. It needs Python 3 with numpy and scipy and takes about 6 minutes on a 16-core machine. The output is deterministic: rebuilding unchanged inputs reproduces the chunks and `data/manifest.json` byte for byte (per-step timings go to stderr, or to `--summary FILE`). The manifest's `study_plates` (fallback images shown only without WebGL) are maintained by hand; the build keeps them.
 
 The build applies these steps from [tools/anatomy_build](tools/anatomy_build), in order. Each one is also a standalone `IN.json OUT.json` command, and running them in this order by hand gives the same records as the build:
 
@@ -75,7 +75,8 @@ python3 tools/anatomy.py pack /tmp/pterional-meshes.json
 
 ## Camera and patient positioning
 
-- **Hold to rotate.** Hold Alt/Option while dragging for the upstream unrestricted trackball rotation. Plain drag, one-finger touch, unmodified arrow/Q/E keys and unmodified two-finger twist do not rotate. Alt/Option + arrow keys rotates; Alt/Option + Q/E rolls. Wheel/pinch zoom and Shift/right-drag or two-finger pan remain available without Alt. Releasing Alt/Option stops rotation on the next input event; there is no rotation toggle or inertia. Anatomical presets (Anterior, Right, Left, Top), Reset View and Surgeon's View remain explicit camera actions.
+- **Camera controls.** A normal one-finger or mouse drag tilts vertically but does not yaw the front view left/right. Hold Alt/Option and drag horizontally to turn side-to-side. Shift/right-drag pans; two-finger movement pans and zooms, two-finger twist rolls, Q/E roll, and arrow keys rotate. Wheel or pinch zooms. Anatomical presets (Anterior, Right, Left, Top) follow the head.
+- **Smooth interaction.** During pointer movement the renderer skips the picking-buffer pass and synchronous pixel readback, uses device-pixel ratio 1, and reduces one procedural texture octave. It restores full display quality and refreshes label visibility after 140 ms without movement. Picking still runs immediately on a click.
 - **Positioning.** The Position step turns the head 20° contralaterally and extends it 20° (the example in Rodríguez Rubio et al.; the amount is target-dependent) about an estimated craniocervical pivot, and later steps keep the pose. Adjust it under **Layers & View › Patient Position** (a collapsible section, opened automatically on the Position step; Anatomical/Operative toggle, rotation, extension and lateral flexion sliders, **Default 20° / 20°**). Neck, body and table tilt are not modeled.
 - **Surgeon's View** and the Position step use a room-fixed camera with a schematic Mayfield-type head holder and the head end of the table; an orientation gizmo in the corner shows the patient axes and gravity. Leaving the Position step returns the camera to the next step's head-framed view unless Surgeon's View was chosen.
 

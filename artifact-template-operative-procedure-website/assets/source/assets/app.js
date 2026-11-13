@@ -26,7 +26,7 @@
     const canvas = $('#canvas'), host = $('#viewport');
     // Camera state: viewQ/camFrame/target are described with the orientation helpers below; distance, pan (screen
     // space, after rotation) and viewZoom keep their original meaning.
-    let gl = null, program = null, uniforms = {}, buffer = null, available = false, viewQ = qFromAngles(1.0, .25, 0), camFrame = 'head', distance = 15, pan = [0, 0], target = [-1, 0, .5], aspect = 1, scheduled = false;
+    let gl = null, program = null, uniforms = {}, buffer = null, available = false, viewQ = qFromAngles(1.0, .25, 0), camFrame = 'head', distance = 15, pan = [0, 0], target = [-1, 0, .5], aspect = 1, scheduled = false, pickDirty = true, interactionActive = false, interactionTimer = 0;
     const scale = 2.05, LINE_MIN_HALF_PX = 1.3, LINE_NUDGE = .03;
     const configs = [];
     for (const c of ['none', 'extra', 'intra'])
@@ -165,11 +165,15 @@
         distance = v.distance; if (v.zoom != null)
         viewZoom = v.zoom; if (v.pan)
         pan = [...v.pan]; viewChanged(); render(); }
-    // Trackball: a drag of (dx, dy) CSS pixels turns the model about the screen axis perpendicular to the drag, so the
-    // surface under the pointer follows it. There is no clamp; any orientation (over the vertex, upside down) is
-    // reachable, and rolling is available through rollView (Alt-drag, two-finger twist, Q/E keys).
+    // Keep ordinary pointer movement from yawing a frontal view: vertical drag tilts only. Alt/Option + horizontal
+    // drag is the deliberate side-to-side turn; other orientations remain available through presets and keys.
     function rotateByDrag(dx, dy, k = .008) { const len = Math.hypot(dx, dy); if (!len)
         return; viewQ = qNorm(qMul(qAxis([dy, dx, 0], len * k), viewQ)); viewChanged(); }
+    function tiltByDrag(dy, k = .008) { if (!dy)
+        return; viewQ = qNorm(qMul(qAxis([dy, 0, 0], Math.abs(dy) * k), viewQ)); viewChanged(); }
+    function yawByDrag(dx, k = .008) { if (!dx)
+        return; viewQ = qNorm(qMul(qAxis([0, Math.sign(dx), 0], Math.abs(dx) * k), viewQ)); viewChanged(); }
+    function markInteraction() { interactionActive = true; clearTimeout(interactionTimer); interactionTimer = setTimeout(() => { interactionActive = false; render(true); }, 140); }
     // Camera glide: slerp the orientation and ease target, distance, pan and zoom to a preset (same frame) over
     // `duration` ms, timed by poseClock like the pose blend. Used when the 'position' step frames the room; any user
     // camera input or preset cancels it (stopGlide). Study-plate captures ignore it.
@@ -256,8 +260,8 @@
         return low; return low[0].toUpperCase() + low.slice(1); }); }
     function updateMobilePanelHeight() { if (isMobile)
         $('#mobileModelDock').style.setProperty('--mobile-panel-height', Math.max(0, host.clientHeight - 62) + 'px'); }
-    function zoomBy(factor) { if (!Number.isFinite(factor) || factor <= 0)
-        return; viewZoom = Math.max(.25, Math.min(16, viewZoom * factor)); render(); }
+    function zoomBy(factor, refreshPicking = true) { if (!Number.isFinite(factor) || factor <= 0)
+        return; viewZoom = Math.max(.25, Math.min(16, viewZoom * factor)); render(refreshPicking); }
     function alignActiveStep() { const card = $$('.step')[stage], panel = $('#steps-panel'); if (!card || panel.hidden)
         return; if (isMobile) {
         panel.scrollTop += card.getBoundingClientRect().top - panel.getBoundingClientRect().top;
@@ -1566,7 +1570,7 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
             return;
         updateGlide();
         updatePose();
-        const ratio = picking ? 1 : Math.min(devicePixelRatio || 1, 2), maxDim = drawLimit(), w = Math.max(1, Math.min(maxDim, Math.round(host.clientWidth * ratio))), h = Math.max(1, Math.min(maxDim, Math.round(host.clientHeight * ratio)));
+        const ratio = picking ? 1 : Math.min(devicePixelRatio || 1, interactionActive ? 1 : 2), maxDim = drawLimit(), w = Math.max(1, Math.min(maxDim, Math.round(host.clientWidth * ratio))), h = Math.max(1, Math.min(maxDim, Math.round(host.clientHeight * ratio)));
         if (!picking && (canvas.width !== w || canvas.height !== h)) {
             canvas.width = w;
             canvas.height = h;
@@ -1590,7 +1594,7 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         gl.uniform3fv(uniforms.Target, viewBasis().target);
         gl.uniform1f(uniforms.Pick, picking ? 1 : 0);
         gl.uniform1f(uniforms.Surgical, palette === 'surgical' ? 1 : 0);
-        gl.uniform1f(uniforms.Quality, isMobile ? 0 : 1);
+        gl.uniform1f(uniforms.Quality, isMobile || interactionActive ? 0 : 1);
         gl.uniform2f(uniforms.Viewport, w, h);
         gl.uniform3fv(uniforms.CamPos, cameraPosition());
         // Opaque meshes first; translucent ones afterwards, back to front, without depth writes. In the picking
@@ -1694,15 +1698,14 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
             syncPoseControls();
         }
     }
-    function render() { if (scheduled)
+    function render(refreshPicking = true) { if (refreshPicking)
+        pickDirty = true; if (scheduled)
         return; scheduled = true; requestAnimationFrame(now => { scheduled = false; poseClock = now; if (mode === '3d') {
-        draw(true);
-        cacheLabelVisibility();
+        if (pickDirty) { pickDirty = false; draw(true); cacheLabelVisibility(); }
         draw();
     } }); }
-    // Pointer input: hold Alt/Option to rotate with the upstream trackball. Plain drag does not rotate.
-    // Shift/right-drag and two-pointer movement pan; pinch zooms. Twist and keyboard rotation also require Alt.
-    // Read altKey on every event so releasing the modifier stops rotation immediately (no latched mode).
+    // A plain one-pointer drag tilts vertically and never yaws horizontally; hold Alt/Option and drag sideways to
+    // turn left/right. Shift/right-drag pans; two pointers pan, pinch and twist. Picking refreshes after movement settles.
     let pointers = new Map(), last = null, moved = 0, pinch = 0, hadMulti = false, pinchCenter = null, twist = null;
     const pairAngle = p => Math.atan2(p[1][1] - p[0][1], p[1][0] - p[0][0]), wrapAngle = a => Math.atan2(Math.sin(a), Math.cos(a));
     canvas.onpointerdown = e => { stopGlide(false); try {
@@ -1723,8 +1726,9 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
     } const dx = e.clientX - last[0], dy = e.clientY - last[1]; moved += Math.abs(dx) + Math.abs(dy); if (dx || dy)
         stopGlide(moved >= 5 || pointers.size > 1); pointers.set(e.pointerId, [e.clientX, e.clientY]); if (pointers.size === 2) {
         const p = [...pointers.values()], d = Math.hypot(p[0][0] - p[1][0], p[0][1] - p[1][1]);
+        markInteraction();
         if (pinch > 0 && d > 0)
-            zoomBy(d / pinch);
+            zoomBy(d / pinch, false);
         const center = [(p[0][0] + p[1][0]) / 2, (p[0][1] + p[1][1]) / 2], unit = 2 * distance / (scale * viewZoom * Math.max(1, host.clientHeight));
         if (pinchCenter) {
             pan[0] += (center[0] - pinchCenter[0]) * unit;
@@ -1733,38 +1737,39 @@ if(uSelected>.5)c=mix(c,vec3(.66,1.,.62),.50);if(uIsMarker>.5)c=mix(c,uColor.rgb
         pinchCenter = center;
         pinch = d;
         const angle = pairAngle(p);
-        if (e.altKey && twist !== null)
+        if (twist !== null)
             rollView(-wrapAngle(angle - twist));
         twist = angle;
     }
     else if (e.shiftKey || e.buttons === 2) {
+        markInteraction();
         const unit = 2 * distance / (scale * viewZoom * Math.max(1, host.clientHeight));
         pan[0] += dx * unit;
         pan[1] -= dy * unit;
     }
-    else if (e.altKey)
-        rotateByDrag(dx, dy); last = [e.clientX, e.clientY]; render(); };
-    canvas.onpointerup = e => { pointers.delete(e.pointerId); twist = null; if (moved < 5 && available && !hadMulti && !e.altKey && !e.shiftKey && e.button === 0) {
+    else if (e.altKey) {
+        markInteraction(); yawByDrag(dx);
+    }
+    else {
+        markInteraction(); tiltByDrag(dy);
+    } last = [e.clientX, e.clientY]; render(false); };
+    canvas.onpointerup = e => { pointers.delete(e.pointerId); twist = null; if (moved < 5 && available && !hadMulti) {
         draw(true);
         cacheLabelVisibility();
         const r = canvas.getBoundingClientRect(), id = pickIdAt(e.clientX - r.left, e.clientY - r.top);
         select(id);
         render();
     } last = null; };
-    function cancelGesture() { pointers.clear(); last = null; twist = null; pinch = 0; pinchCenter = null; hadMulti = true; }
-    canvas.onpointercancel = cancelGesture;
-    canvas.onlostpointercapture = cancelGesture;
-    window.addEventListener('blur', cancelGesture);
+    canvas.onpointercancel = e => { pointers.delete(e.pointerId); last = null; twist = null; };
     canvas.oncontextmenu = e => e.preventDefault();
-    canvas.addEventListener('wheel', e => { e.preventDefault(); stopGlide(false); const delta = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? host.clientHeight : 1); zoomBy(Math.exp(-delta * .0015)); }, { passive: false });
+    canvas.addEventListener('wheel', e => { e.preventDefault(); stopGlide(false); markInteraction(); const delta = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? host.clientHeight : 1); zoomBy(Math.exp(-delta * .0015), false); }, { passive: false });
     canvas.onkeydown = e => { if (e.key === 'Escape') {
         clearSelection();
         return;
-    } if (!e.altKey && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'q', 'Q', 'e', 'E'].includes(e.key))
-        return; if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '+', '-', '=', 'Home', 'q', 'Q', 'e', 'E'].includes(e.key)) {
+    } if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '+', '-', '=', 'Home', 'q', 'Q', 'e', 'E'].includes(e.key)) {
         e.preventDefault();
         stopGlide();
-        // Alt/Option + arrows turn about screen axes; Alt/Option + Q/E roll.
+        // Arrows turn about the screen axes (same steps as before, now unclamped); Q/E roll.
         if (e.key === 'ArrowLeft')
             rotateByDrag(-.13, 0, 1);
         if (e.key === 'ArrowRight')
