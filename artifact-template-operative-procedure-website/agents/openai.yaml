@@ -1,7 +1,4 @@
 interface:
   display_name: "Operative Procedure Website"
-  short_description: "Build interactive procedure guides for desktop and mobile"
-  icon_large: "./assets/preview.png"
-  default_prompt: "Use $artifact-template-operative-procedure-website for the procedure I name. Adapt the bundled pterional website to my requested procedure and scope using relevant studies."
-policy:
-  allow_implicit_invocation: true
+  short_description: "Build lifelike, evidence-based operative anatomy guides"
+  default_prompt: "Use $artifact-template-operative-procedure-website for the procedure I name. Research the relevant papers, then adapt the bundled PR #1 renderer and anatomy to my procedure, preserving lifelike tissues and Alt/Option-only field rotation."

@@ -30,3 +30,11 @@ A Codex skill that builds interactive anatomy guides from operative papers. The 
 - For extracting and evaluating new meshes, the skill prefers a compatible Blender installation with scene script execution disabled. It includes a fallback catalog reader for the pinned scene. If the atlas lacks a structure or the paper does not establish the geometry, Codex will identify that gap and ask for appropriate meshes or evidence.
 
 See the [upstream atlas](https://github.com/Z-Anatomy/Models-of-human-anatomy) and the skill’s reference attribution for the anatomy sources and license terms. Article transcriptions are excluded from this repository.
+
+## Updated reference and interaction
+
+The bundled website now uses the actual code and assets from [pterional-craniotomy PR #1](https://github.com/nyuolab/pterional-craniotomy/pull/1), commit `966eb1b5225768111bf7fe4300a6f14b916d01b7`: Surgical/Atlas tissue shading, baked ambient occlusion, layered scalp, progressive incision and closure, curling/peeling flaps, conforming membranes and surface-following landmarks. It retains Patient Position, Surgeon's View and the orientation gizmo.
+
+The dedicated **Operative View** button is removed. **Hold Alt/Option and drag to rotate**; ordinary drag/touch stays fixed. Alt/Option + arrows rotates and Alt/Option + Q/E rolls. Wheel/pinch zoom and Shift/right-drag or two-finger pan remain available. Reset View and explicit presets still work. The Position step retains its deliberate patient-positioning demonstration.
+
+Paper discovery, full-text/PDF intake, figure inspection and evidence mapping remain the first steps. The skill includes the upstream renderer and geometry code, rather than instructions to approximate their appearance. `assets/source/reference-revision.json` (inside the skill folder) records the source revision, exact upstream hashes and the small local differences. The materializer supports the new external manifest and stylesheet; both hosted and standalone builds preserve the same anatomy and rendering.
