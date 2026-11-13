@@ -37,4 +37,20 @@ canvas.onpointerdown(event(10,10)); canvas.onpointerup(event(10,10)); assert.dee
 const prior=zooms.length; events.wheel({...event(0,0),deltaY:20,deltaMode:0}); canvas.onkeydown({...event(0,0),key:'+'});
 assert.equal(zooms.length,prior+2,'Wheel and keyboard zoom should work');
 assert(renders.some(x=>x[0]===false),'Camera movement should render without picking every frame');
-console.log('PASS: syntax, removed camera action, two-axis upright orbit, Alt camera roll, drag threshold, pan, touch, zoom, picking and readback suppression');
+// Exercise the actual orientation math, not only the handler's call to orbitByDrag.
+const mathStart = runtime.indexOf('    function qMul('), mathEnd = runtime.indexOf('    const POSE_PIVOT', mathStart);
+const orbitStart = runtime.indexOf('    function orbitByDrag('), orbitEnd = runtime.indexOf('    function markInteraction(', orbitStart);
+assert(mathStart >= 0 && mathEnd > mathStart && orbitStart >= 0 && orbitEnd > orbitStart);
+const math = vm.createContext({});
+vm.runInContext(`${runtime.slice(mathStart, mathEnd)}\nlet viewQ=[0,0,0,1], camFrame='head', viewCache=null; function viewChanged(){viewCache=null}\n${runtime.slice(orbitStart,orbitEnd)}`,math);
+const eye = () => Array.from(vm.runInContext('qMat(viewQ).slice(6,9)',math));
+const near = (a,b) => assert(Math.abs(a-b)<1e-5,`${a} should equal ${b}`);
+for(let i=0;i<100;i++)vm.runInContext('orbitByDrag(1,0)',math);
+let direction=eye(); near(direction[0],Math.sin(.8)); near(direction[2],Math.cos(.8)); near(direction[1],0);
+for(let i=0;i<50;i++)vm.runInContext('orbitByDrag(0,-1)',math);
+direction=eye(); near(direction[0],Math.cos(.4)*Math.sin(.8)); near(direction[1],Math.sin(.4)); near(direction[2],Math.cos(.4)*Math.cos(.8));
+vm.runInContext("camFrame='world';viewQ=qLook([0,1,0],[0,0,1]);orbitByDrag(10,-10)",math);
+direction=eye(); near(direction[0],Math.cos(.08)*Math.sin(.08)); near(direction[1],Math.cos(.08)*Math.cos(.08)); near(direction[2],Math.sin(.08));
+vm.runInContext("viewQ=qLook([0,0,1],[0,1,0]);camFrame='head';orbitByDrag(1,1)",math);
+assert(eye().every(Number.isFinite),'A drag at the pole must stay finite');
+console.log('PASS: orientation continuity on both axes and frames, pole stability, pointer controls and picking suppression');
