@@ -39,9 +39,10 @@
   ],
   "localChanges": [
     "Remove the dedicated Operative View button, handler, QA export and stale step note.",
-    "Keep plain vertical drag as tilt-only and prevent plain horizontal drag from yawing; use Alt/Option plus horizontal drag for deliberate side-to-side rotation.",
-    "Skip picking-buffer render and synchronous pixel readback during active pointer movement; defer label/picking refresh until 140 ms idle while preserving immediate click picking.",
-    "Render active pointer frames at device-pixel ratio 1 with reduced procedural-noise quality, then restore full display quality after movement settles.",
+    "Use two-axis upright orbit for ordinary drag; Alt/Option-drag rolls the camera in place without orbiting the head.",
+    "Ignore pointer movement until a 5 CSS-pixel drag threshold is crossed to filter press jitter.",
+    "Discard pending pick work at drag start and suppress picking-buffer render and synchronous pixel readback during active movement, including pose-animation redraws.",
+    "Render active pointer frames at device-pixel ratio 1 with reduced procedural-noise quality; restore full display quality and picking after 140 ms idle while keeping click picking immediate.",
     "Update accessible gesture instructions, reference documentation and interaction regression checks."
   ],
   "geometry": "All six anatomy chunks, material/deformation shaders, CSS, loader and anatomy build modules are unchanged from upstream."
