@@ -40,6 +40,7 @@
   "localChanges": [
     "Remove the dedicated Operative View button, handler, QA export and stale step note.",
     "Use two-axis upright orbit for ordinary drag; Alt/Option-drag rolls the camera in place without orbiting the head.",
+    "Reverse the plain-drag azimuth and elevation signs so the visible anatomy follows the pointer horizontally and vertically; preserve Alt/Option roll and pan mappings.",
     "Read the eye direction from the camera matrix's third row and preserve azimuth at overhead poles so successive ordinary drags remain continuous.",
     "Keep interaction rendering active for the entire held gesture and debounce restoration after final pointer release, avoiding mid-drag canvas resize and synchronous picking on slow frames.",
     "Measure the drag threshold from pointerdown displacement rather than accumulating oscillating hand jitter; never select after a completed drag returns to its start.",

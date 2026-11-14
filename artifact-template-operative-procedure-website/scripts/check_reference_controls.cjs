@@ -49,13 +49,16 @@ vm.runInContext(`${runtime.slice(mathStart, mathEnd)}\nlet viewQ=[0,0,0,1], camF
 const eye = () => Array.from(vm.runInContext('qMat(viewQ).slice(6,9)',math));
 const near = (a,b) => assert(Math.abs(a-b)<1e-5,`${a} should equal ${b}`);
 for(let i=0;i<100;i++)vm.runInContext('orbitByDrag(1,0)',math);
-let direction=eye(); near(direction[0],Math.sin(.8)); near(direction[2],Math.cos(.8)); near(direction[1],0);
+let direction=eye(); near(direction[0],Math.sin(-.8)); near(direction[2],Math.cos(-.8)); near(direction[1],0);
 for(let i=0;i<50;i++)vm.runInContext('orbitByDrag(0,-1)',math);
-direction=eye(); near(direction[0],Math.cos(.4)*Math.sin(.8)); near(direction[1],Math.sin(.4)); near(direction[2],Math.cos(.4)*Math.cos(.8));
+direction=eye(); near(direction[0],Math.cos(-.4)*Math.sin(-.8)); near(direction[1],Math.sin(-.4)); near(direction[2],Math.cos(-.4)*Math.cos(-.8));
 vm.runInContext("camFrame='world';viewQ=qLook([0,1,0],[0,0,1]);orbitByDrag(10,-10)",math);
-direction=eye(); near(direction[0],Math.cos(.08)*Math.sin(.08)); near(direction[1],Math.cos(.08)*Math.cos(.08)); near(direction[2],Math.sin(.08));
+direction=eye(); near(direction[0],Math.cos(-.08)*Math.sin(-.08)); near(direction[1],Math.cos(-.08)*Math.cos(-.08)); near(direction[2],Math.sin(-.08));
 vm.runInContext("viewQ=qLook([0,0,1],[0,1,0]);camFrame='head';orbitByDrag(1,1)",math);
 assert(eye().every(Number.isFinite),'A drag at the pole must stay finite');
+vm.runInContext("viewQ=qLook([0,0,1],[0,1,0]);orbitByDrag(10,-10)",math);
+const front=Array.from(vm.runInContext('mApply(qMat(viewQ),[0,0,2])',math));
+assert(front[0]>0 && front[1]>0,'Dragging right and up should move a visible front landmark right and up');
 const timerStart=runtime.indexOf('    function markInteraction('), timerEnd=runtime.indexOf('    // Camera glide:',timerStart);
 const timers=[], refreshes=[], held=new Map([[1,[0,0]]]);
 const timing={pointers:held, interactionActive:false, pickDirty:true, interactionTimer:0,
