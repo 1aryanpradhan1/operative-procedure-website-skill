@@ -38,10 +38,16 @@
     "index.html"
   ],
   "localChanges": [
-    "Remove dedicated Operative View action, handler, QA export and stale source notes.",
-    "Require event.altKey for manual trackball rotation, keyboard rotation/roll and touch twist; retain pan, zoom and explicit presets.",
-    "Clear gestures on cancel, lost capture and blur; suppress modifier-gesture picking.",
-    "Update input help and reference README; document original-base requirement for geometry rebuilding."
+    "Remove the dedicated Operative View button, handler, QA export and stale step note.",
+    "Use two-axis upright orbit for ordinary drag; Alt/Option-drag rolls the camera in place without orbiting the head.",
+    "Reverse the plain-drag azimuth and elevation signs so the visible anatomy follows the pointer horizontally and vertically; preserve Alt/Option roll and pan mappings.",
+    "Read the eye direction from the camera matrix's third row and preserve azimuth at overhead poles so successive ordinary drags remain continuous.",
+    "Keep interaction rendering active for the entire held gesture and debounce restoration after final pointer release, avoiding mid-drag canvas resize and synchronous picking on slow frames.",
+    "Measure the drag threshold from pointerdown displacement rather than accumulating oscillating hand jitter; never select after a completed drag returns to its start.",
+    "Ignore pointer movement until a 5 CSS-pixel drag threshold is crossed to filter press jitter.",
+    "Discard pending pick work at drag start and suppress picking-buffer render and synchronous pixel readback during active movement, including pose-animation redraws.",
+    "Render active pointer frames at device-pixel ratio 1 with reduced procedural-noise quality; restore full display quality and picking after 140 ms idle while keeping click picking immediate.",
+    "Update accessible gesture instructions, reference documentation and interaction regression checks."
   ],
   "geometry": "All six anatomy chunks, material/deformation shaders, CSS, loader and anatomy build modules are unchanged from upstream."
 }
