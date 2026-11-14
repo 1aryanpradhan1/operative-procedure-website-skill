@@ -10,26 +10,29 @@ new vm.Script(runtime);
 assert(!/operativeView|setOperativeView/.test(runtime + html), 'Removed camera action must not survive');
 assert(runtime.includes('interactionActive = true; pickDirty = false'), 'Beginning a gesture must discard queued picking');
 assert(runtime.includes('if (interactionActive)\n        pickDirty = false'), 'Redraws during interaction must suppress picking');
+assert(runtime.includes('if (pointers.size)\n        return; interactionActive = false'), 'A held gesture must not restore full rendering or picking during a slow frame');
 const start = runtime.indexOf('    // Plain one-pointer dragging orbits');
 const end = runtime.indexOf("    canvas.addEventListener('webglcontextlost'", start);
 assert(start >= 0 && end > start, 'Camera handlers should be present');
 const events = {}, orbits = [], rolls = [], zooms = [], picks = [], renders = [];
 const canvas = { setPointerCapture() {}, getBoundingClientRect: () => ({left:0,top:0,width:800,height:600}), addEventListener:(k,v)=>events[k]=v };
-const context = {canvas, host:{clientHeight:600}, distance:10, scale:1, viewZoom:1, pan:[0,0], available:true,
+const context = {canvas, host:{clientHeight:600}, distance:10, scale:1, viewZoom:1, pan:[0,0], available:true, interactionActive:false,
   stopGlide(){}, markInteraction(){}, render(...a){renders.push(a)}, draw(){}, cacheLabelVisibility(){}, clearSelection(){},
   orbitByDrag:(...a)=>orbits.push(a), rollView:a=>rolls.push(a), zoomBy:(...a)=>zooms.push(a), pickIdAt:()=>7, select:id=>picks.push(id),
   $:()=>({click(){}}), wrapAngle:a=>a};
 vm.runInNewContext(runtime.slice(start,end), context);
 const event=(x,y,extra={})=>({pointerId:1,clientX:x,clientY:y,button:0,buttons:1,altKey:false,shiftKey:false,preventDefault(){},...extra});
 const move=(x,y,extra)=>canvas.onpointermove(event(x,y,extra));
-canvas.onpointerdown(event(100,100)); move(102,101); assert.equal(orbits.length,0,'Sub-threshold press jitter must not orbit');
-move(104,102); assert.deepEqual(orbits,[[2,1]],'Normal drag must orbit both axes after the threshold');
-move(114,109); assert.deepEqual(orbits[1],[10,7]); canvas.onpointerup(event(114,109)); assert.equal(picks.length,0,'A drag must not select anatomy');
-canvas.onpointerdown(event(200,200)); move(206,200,{altKey:true}); assert.equal(orbits.length,2,'Alt-drag must not orbit the head');
+canvas.onpointerdown(event(100,100)); move(102,101); move(99,100); move(103,101); move(100,100);
+assert.equal(orbits.length,0,'Back-and-forth press jitter must not accumulate into a drag');
+move(106,102); assert.deepEqual(orbits,[[6,2]],'Normal drag must orbit both axes after radial threshold');
+move(116,109); assert.deepEqual(orbits[1],[10,7]); move(100,100);
+canvas.onpointerup(event(100,100)); assert.equal(picks.length,0,'Returning a real drag to its start must not select anatomy');
+canvas.onpointerdown(event(200,200)); move(206,200,{altKey:true}); assert.equal(orbits.length,3,'Alt-drag must not orbit the head');
 assert.equal(rolls.length,1,'Alt-drag should roll the camera'); canvas.onpointerup(event(206,200,{altKey:true}));
 canvas.onpointerdown(event(10,10)); move(30,25,{shiftKey:true}); assert(context.pan[0]!==0 && context.pan[1]!==0,'Shift drag should pan'); canvas.onpointerup(event(30,25));
 canvas.onpointerdown(event(10,10)); move(20,20,{buttons:2}); canvas.onpointerup(event(20,20,{button:2}));
-canvas.onpointerdown(event(10,10,{pointerType:'touch'})); move(30,25,{pointerType:'touch'}); assert.equal(orbits.length,3,'Touch drag should orbit after the threshold');
+canvas.onpointerdown(event(10,10,{pointerType:'touch'})); move(30,25,{pointerType:'touch'}); assert.equal(orbits.length,4,'Touch drag should orbit after the threshold');
 canvas.onpointerdown(event(100,25,{pointerId:2,pointerType:'touch'})); move(120,60,{pointerId:2,pointerType:'touch'});
 assert(zooms.some(x=>x[1]===false),'Pinch zoom should avoid immediate picking refresh');
 canvas.onpointerup(event(30,25,{pointerType:'touch'})); canvas.onpointerup(event(120,60,{pointerId:2,pointerType:'touch'})); assert.equal(picks.length,0,'Multi-touch must not select anatomy');
@@ -53,4 +56,14 @@ vm.runInContext("camFrame='world';viewQ=qLook([0,1,0],[0,0,1]);orbitByDrag(10,-1
 direction=eye(); near(direction[0],Math.cos(.08)*Math.sin(.08)); near(direction[1],Math.cos(.08)*Math.cos(.08)); near(direction[2],Math.sin(.08));
 vm.runInContext("viewQ=qLook([0,0,1],[0,1,0]);camFrame='head';orbitByDrag(1,1)",math);
 assert(eye().every(Number.isFinite),'A drag at the pole must stay finite');
-console.log('PASS: orientation continuity on both axes and frames, pole stability, pointer controls and picking suppression');
+const timerStart=runtime.indexOf('    function markInteraction('), timerEnd=runtime.indexOf('    // Camera glide:',timerStart);
+const timers=[], refreshes=[], held=new Map([[1,[0,0]]]);
+const timing={pointers:held, interactionActive:false, pickDirty:true, interactionTimer:0,
+  setTimeout:f=>{timers.push(f);return timers.length},clearTimeout(){},render:v=>refreshes.push(v)};
+vm.createContext(timing);vm.runInContext(runtime.slice(timerStart,timerEnd)+'\nmarkInteraction()',timing);
+assert.equal(timing.interactionActive,true);assert.equal(timing.pickDirty,false);
+timers.shift()();assert.equal(timing.interactionActive,true,'Idle timer must not end an active held gesture');
+assert.equal(refreshes.length,0,'Held pointer must not trigger full-resolution picking');
+held.clear();vm.runInContext('markInteraction()',timing);timers.shift()();
+assert.equal(timing.interactionActive,false);assert.deepEqual(refreshes,[true],'Full-quality picking resumes after release');
+console.log('PASS: continuous orbit, pole stability, radial drag threshold, held-gesture quality and picking');
